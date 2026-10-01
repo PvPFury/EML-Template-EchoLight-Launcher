@@ -21,6 +21,58 @@ import type {
   IAvatar
 } from 'eml-lib'
 
+export interface IInstance {
+  id: string
+  name: string
+  path: string
+  version: string
+  icon?: string
+  mods: IModInstance[]
+  modpacks?: string[]
+  resourcePacks?: string[]
+  shaders?: string[]
+  createdAt: number
+}
+
+export interface IModInstance {
+  id: string
+  name: string
+  version: string
+  source: 'modrinth' | 'curseforge'
+  sourceId: string
+  jarPath: string
+  downloadedAt: number
+}
+
+export interface IModrinthMod {
+  id: string
+  slug: string
+  name: string
+  summary: string
+  description: string
+  icon_url: string
+  downloads: number
+  follows: number
+  project_type: string
+  versions: string[]
+}
+
+export interface IModrinthVersion {
+  id: string
+  version_number: string
+  game_versions: string[]
+  loaders: string[]
+  files: IModrinthFile[]
+}
+
+export interface IModrinthFile {
+  hashes: { sha512?: string; sha1?: string }
+  url: string
+  filename: string
+  primary: boolean
+  size: number
+}
+
 declare global {
   interface Window {
     api: {
@@ -28,6 +80,22 @@ declare global {
         login: () => Promise<IAuthResponse>
         refresh: () => Promise<IAuthResponse>
         logout: () => Promise<{ success: boolean }>
+        createOfflineAccount: (username: string) => Promise<IAuthResponse>
+        getOfflineAccounts: () => Promise<Account[]>
+      }
+      instances: {
+        getInstances: () => Promise<IInstance[]>
+        createInstance: (name: string, version: string) => Promise<IInstance>
+        deleteInstance: (id: string) => Promise<boolean>
+        getInstancePath: (id: string) => Promise<string>
+      }
+      mods: {
+        searchModrinth: (query: string, filters?: any) => Promise<IModrinthMod[]>
+        getModrinthMod: (id: string) => Promise<IModrinthMod>
+        getModrinthVersions: (id: string, gameVersion?: string) => Promise<IModrinthVersion[]>
+        installMod: (instanceId: string, version: IModrinthVersion, file: IModrinthFile) => Promise<boolean>
+        getInstalledMods: (instanceId: string) => Promise<IModInstance[]>
+        removeMod: (instanceId: string, modId: string) => Promise<boolean>
       }
       skin: {
         reload: (account?: Account) => Promise<void | null>
@@ -35,10 +103,8 @@ declare global {
         getCape: (account?: Account) => Promise<ICape[] | null>
         getAvatar: (account?: Account) => Promise<IAvatar | null>
         updateSkin: (source: string | ArrayBuffer, model?: 'classic' | 'slim') => Promise<ISkin[] | null>
-        // updateCape: (source: string | Blob) => Promise<ICape[] | null> --- Not implemented with Microsoft accounts ---
         switchCape: (id: string) => Promise<ICape[] | null>
         deleteSkin: (id: string) => Promise<ISkin[] | null>
-        // deleteCape: () => Promise<ICape[] | null> --- Not implemented with Microsoft accounts ---
         hideCape: () => Promise<ICape[] | null>
       }
       profiles: {
@@ -67,37 +133,29 @@ declare global {
       }
       game: {
         launch: (payload: { account: Account; settings: IGameSettings, profileSlug: string }) => Promise<void>
-
         launchComputeDownload: (callback: () => void) => void
-
         launchDownload: (callback: (value: LauncherEvents['launch_download'][0]) => void) => void
         downloadProgress: (callback: (value: DownloaderEvents['download_progress'][0]) => void) => void
         downloadError: (callback: (value: DownloaderEvents['download_error'][0]) => void) => void
         downloadEnd: (callback: (value: DownloaderEvents['download_end'][0]) => void) => void
-
         launchInstallLoader: (callback: (value: LauncherEvents['launch_install_loader'][0]) => void) => void
-
         launchExtractNatives: (callback: () => void) => void
         extractProgress: (callback: (value: FilesManagerEvents['extract_progress'][0]) => void) => void
         extractEnd: (callback: (value: FilesManagerEvents['extract_end'][0]) => void) => void
         launchCopyAssets: (callback: () => void) => void
         copyProgress: (callback: (value: FilesManagerEvents['copy_progress'][0]) => void) => void
         copyEnd: (callback: (value: FilesManagerEvents['copy_end'][0]) => void) => void
-
         launchPatchLoader: (callback: () => void) => void
         patchProgress: (callback: (value: PatcherEvents['patch_progress'][0]) => void) => void
         patchError: (callback: (value: PatcherEvents['patch_error'][0]) => void) => void
         patchEnd: (callback: (value: PatcherEvents['patch_end'][0]) => void) => void
-
         launchCheckJava: (callback: () => void) => void
         javaInfo: (callback: (value: JavaEvents['java_info'][0]) => void) => void
-
         launchClean: (callback: () => void) => void
         cleanProgress: (callback: (value: CleanerEvents['clean_progress'][0]) => void) => void
         cleanEnd: (callback: (value: CleanerEvents['clean_end'][0]) => void) => void
         launchLaunch: (callback: (value: LauncherEvents['launch_launch'][0]) => void) => void
         launched: (callback: () => void) => void
-
         launchData: (callback: (value: LauncherEvents['launch_data'][0]) => void) => void
         launchClose: (callback: (value: any) => void) => void
         launchDebug: (callback: (value: LauncherEvents['launch_debug'][0]) => void) => void
@@ -118,7 +176,25 @@ declare global {
 export const auth = {
   login: async () => await window.api.auth.login(),
   logout: async () => await window.api.auth.logout(),
-  refresh: async () => await window.api.auth.refresh()
+  refresh: async () => await window.api.auth.refresh(),
+  createOfflineAccount: async (username: string) => await window.api.auth.createOfflineAccount(username),
+  getOfflineAccounts: async () => await window.api.auth.getOfflineAccounts()
+}
+
+export const instances = {
+  getInstances: async () => await window.api.instances.getInstances(),
+  createInstance: async (name: string, version: string) => await window.api.instances.createInstance(name, version),
+  deleteInstance: async (id: string) => await window.api.instances.deleteInstance(id),
+  getInstancePath: async (id: string) => await window.api.instances.getInstancePath(id)
+}
+
+export const mods = {
+  searchModrinth: async (query: string, filters?: any) => await window.api.mods.searchModrinth(query, filters),
+  getModrinthMod: async (id: string) => await window.api.mods.getModrinthMod(id),
+  getModrinthVersions: async (id: string, gameVersion?: string) => await window.api.mods.getModrinthVersions(id, gameVersion),
+  installMod: async (instanceId: string, version: IModrinthVersion, file: IModrinthFile) => await window.api.mods.installMod(instanceId, version, file),
+  getInstalledMods: async (instanceId: string) => await window.api.mods.getInstalledMods(instanceId),
+  removeMod: async (instanceId: string, modId: string) => await window.api.mods.removeMod(instanceId, modId)
 }
 
 export const skin = {
@@ -127,10 +203,8 @@ export const skin = {
   getCape: async (account?: Account) => await window.api.skin.getCape(account),
   getAvatar: async (account?: Account) => await window.api.skin.getAvatar(account),
   updateSkin: async (source: string | ArrayBuffer, model: 'classic' | 'slim') => await window.api.skin.updateSkin(source, model),
-  // updateCape: async (source: string | Blob) => await window.api.skin.updateCape(source), --- Not implemented with Microsoft accounts ---
   switchCape: async (id: string) => await window.api.skin.switchCape(id),
   deleteSkin: async (id: string) => await window.api.skin.deleteSkin(id),
-  // deleteCape: async () => await window.api.skin.deleteCape(), --- Not implemented with Microsoft accounts ---
   hideCape: async () => await window.api.skin.hideCape()
 }
 
@@ -204,5 +278,3 @@ export const settings = {
 export const system = {
   getInfo: () => window.api.system.getInfo()
 }
-
-
