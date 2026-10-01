@@ -1,44 +1,102 @@
 #view-login {
+  display: flex;
   justify-content: center;
   align-items: center;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(138, 199, 255, 0.15), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(126, 240, 217, 0.1), transparent 40%),
+    linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-deep) 100%);
 }
 
 .login-card {
-  width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 48px;
   background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 40px;
-  text-align: center;
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-lg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 380px;
+  animation: fadeInUp 0.6s ease;
 
   .logo {
-    width: 80px;
-    margin-bottom: 20px;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 16px rgba(138, 199, 255, 0.2));
   }
 
   h1 {
-    font-size: 24px;
-    margin-bottom: 5px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+    margin: 0;
   }
 
   .subtitle {
-    color: var(--text-muted);
     font-size: 14px;
-    margin-bottom: 30px;
+    color: var(--text-muted);
+    text-align: center;
   }
 
-  /* .btn-microsoft is now defined in main.scss/Global Buttons */
+  .login-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .btn-microsoft {
+    background: linear-gradient(135deg, rgba(40, 120, 240, 0.9), rgba(30, 100, 200, 0.9));
+    border-color: rgba(100, 160, 255, 0.3);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(50, 140, 255, 0.95), rgba(40, 110, 220, 0.95));
+    }
+  }
+
+  .btn-offline {
+    background: linear-gradient(135deg, rgba(126, 240, 217, 0.12), rgba(106, 200, 180, 0.12));
+    border: 1px solid rgba(126, 240, 217, 0.3);
+    color: var(--secondary);
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(126, 240, 217, 0.18), rgba(106, 200, 180, 0.18));
+      border-color: rgba(126, 240, 217, 0.5);
+    }
+  }
 
   .login-footer {
-    margin-top: 20px;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--text-soft);
+    text-align: center;
+
+    small {
+      display: block;
+    }
 
     a {
-      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 }
